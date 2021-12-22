@@ -1,76 +1,57 @@
 local players = game:GetService("Players")
-local coreGui = game:GetService("CoreGui")
-local lplr = players.LocalPlayer
-
-local rootFolder = Instance.new("Folder",coreGui)
-rootFolder.Name = "RF"
+local cGui = game:GetService("CoreGui")
+local undetectable = Instance.new("Folder",cGui)
 
 
-local settings = { -- edit if you want
-    color = Color3.fromRGB(255,255,255),
-    transgender = 0.8
-}
+function chamPart(part,color3,transparency,plr) -- my cham function
+	local pFolder = undetectable:WaitForChild(plr.Name)
 
-function ornamatePart(char,part)
-    local plrFolder = rootFolder[char.Name] 
-    local bho = Instance.new("BoxHandleAdornment",plrFolder)
-    bho.Name = part.Name
-    bho.ZIndex = 1
-    bho.AlwaysOnTop = true
-    bho.Color3 = settings.color
-    bho.Transparency = settings.transgender
-    bho.Size = part.Size
-    bho.Adornee = part
+    local cham = Instance.new("BoxHandleAdornment",pFolder)
+    cham.Name = "NotChams"
+    cham.Adornee = part
+    cham.Color3 = color3
+    cham.Transparency = transparency
+    cham.AlwaysOnTop = true
+    cham.ZIndex = 1
+    cham.Size = part.Size
+    cham.Visible = true
 end
 
-function instate(plr)
-    local folder = Instance.new("Folder",rootFolder)
-    folder.Name = plr.Name
+function chamCharacter(plr,char)
+	for _,ins in pairs(char:GetChildren()) do
+		if ins:IsA("BasePart") then
+			chamPart(ins,Color3.fromRGB(255,255,255),0.7,plr)
+		end
+	end
+end
 
-    local char = plr.Character or plr.CharacterAdded:Wait()
+function chamPlayer(plr)
+	if not undetectable:FindFirstChild(plr.Name) then
+		local char = plr.Character or plr.CharacterAdded:Wait()
 
-    for _,v in pairs(char:GetChildren()) do
-        if v:IsA("BasePart") and v.Name ~= "HumanoidRootPart" then
-            ornamatePart(char,v)
-        end
-    end 
+		local folder = Instance.new("Folder",undetectable)
+		folder.Name = plr.Name
 
+		chamCharacter(plr,char)
+	end
 
+	plr.CharacterAppearanceLoaded:Connect(function()
+		local char = plr.Character or plr.CharacterAdded:Wait()
+		undetectable:FindFirstChild(plr.Name):Destroy()
 
-    plr.CharacterAdded:Connect(function(char)
-        repeat wait() until char.Parent == workspace
+		local folder = Instance.new("Folder",undetectable)
+		folder.Name = plr.Name
 
-        for _,v in pairs(char:GetChildren()) do
-            if v:IsA("BasePart") and v.Name ~= "HumanoidRootPart" then
-                ornamatePart(char,v)
-            end
-        end
-    end)
-
-    plr.CharacterRemoving:Connect(function(char)
-        local plrFolder = rootFolder[char.Name]
-        for _,v in pairs(plrFolder:GetChildren()) do
-            v:Destroy()
-        end
-    end)
-    
+		chamCharacter(plr,char)
+	end)
 end
 
 
 for _,plr in pairs(players:GetPlayers()) do
-    if plr ~= lplr then
-        instate(plr)
-    end
+	chamPlayer(plr)
 end
 
 players.PlayerAdded:Connect(function(plr)
-    if plr ~= lplr then
-        instate(plr)
-    end
+	chamPlayer(plr)
 end)
-
-players.PlayerRemoving:Connect(function(plr)
-    local folder = rootFolder:FindFirstChild(plr.Name)
-    folder:Destroy()
-end)
--- simple, undetectable
+-- Minus 30 lines, way better
