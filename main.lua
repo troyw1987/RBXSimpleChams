@@ -1,10 +1,13 @@
+local undetectable = Instance.new("Folder",game:GetService("CoreGui"))
 local players = game:GetService("Players")
-local cGui = game:GetService("CoreGui")
-local undetectable = Instance.new("Folder",cGui)
 
+function chamPart(part,color3,transparency,char) -- my cham function
+	local pFolder = undetectable:FindFirstChild(char.Name)
 
-function chamPart(part,color3,transparency,plr) -- my cham function
-	local pFolder = undetectable:WaitForChild(plr.Name)
+    if not pFolder then
+        pFolder = Instance.new("Folder",undetectable)
+        pFolder.Name = char.Name
+    end
 
     local cham = Instance.new("BoxHandleAdornment",pFolder)
     cham.Name = "NotChams"
@@ -17,41 +20,48 @@ function chamPart(part,color3,transparency,plr) -- my cham function
     cham.Visible = true
 end
 
-function chamCharacter(plr,char)
-	for _,ins in pairs(char:GetChildren()) do
-		if ins:IsA("BasePart") then
-			chamPart(ins,Color3.fromRGB(255,255,255),0.7,plr)
-		end
-	end
+function chamChar(char)
+    for _,v in pairs(char:GetChildren()) do
+        if v:IsA("BasePart") then
+            chamPart(v,Color3.fromRGB(255,255,255),0.7,char)
+        end
+    end
 end
 
-function chamPlayer(plr)
-	if not undetectable:FindFirstChild(plr.Name) then
-		local char = plr.Character or plr.CharacterAdded:Wait()
+function init(plr)
+    if plr.Character then
+        plr.Character:WaitForChild("Humanoid")
+        chamChar(plr.Character)
+    end
 
-		local folder = Instance.new("Folder",undetectable)
-		folder.Name = plr.Name
+    plr.CharacterAdded:Connect(function(char)
+        local pFolder = undetectable:FindFirstChild(char.Name)
 
-		chamCharacter(plr,char)
-	end
+        if pFolder then
+            pFolder:Destroy()
+        end
 
-	plr.CharacterAppearanceLoaded:Connect(function()
-		local char = plr.Character or plr.CharacterAdded:Wait()
-		undetectable:FindFirstChild(plr.Name):Destroy()
-
-		local folder = Instance.new("Folder",undetectable)
-		folder.Name = plr.Name
-
-		chamCharacter(plr,char)
-	end)
+        char:WaitForChild("Humanoid")
+        chamChar(char)
+    end)
 end
 
-
-for _,plr in pairs(players:GetPlayers()) do
-	chamPlayer(plr)
-end
+--
 
 players.PlayerAdded:Connect(function(plr)
-	chamPlayer(plr)
+    init(plr)
 end)
--- Minus 30 lines, way better
+
+players.PlayerRemoving:Connect(function(plr)
+    local pFolder = undetectable:FindFirstChild(plr.Name)
+
+    if pFolder then
+        pFolder:Destroy()
+    end
+end)
+
+--
+
+for _,v in pairs(players:GetPlayers()) do
+    init(v)
+end
