@@ -56,6 +56,7 @@ function updateChams()
 end
 
 function chamChar(char)
+	if char == game:GetService("Players").LocalPlayer.Character then return end
     for _,v in pairs(char:GetChildren()) do
         if v:IsA("BasePart") then
             chamPart(v,char)
